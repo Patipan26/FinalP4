@@ -1,0 +1,82 @@
+name: finalp4
+
+services:
+  mysql:
+    image: mysql:8.0
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-finalp4root}
+      MYSQL_DATABASE: carcare_db
+    ports:
+      - "${MYSQL_PORT:-3308}:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build:
+      context: ./backend
+    restart: unless-stopped
+    environment:
+      PORT: 4000
+      FRONTEND_URL: http://localhost:${FRONTEND_PORT:-5174}
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: carcare_db
+      DB_USER: root
+      DB_PASSWORD: ${MYSQL_ROOT_PASSWORD:-finalp4root}
+      JWT_SECRET: ${JWT_SECRET:-finalp4-docker-development-secret}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      SHOP_LAT: ${SHOP_LAT:-13.7563}
+      SHOP_LNG: ${SHOP_LNG:-100.5018}
+      MAX_DISTANCE_METERS: ${MAX_DISTANCE_METERS:-100}
+      STANDARD_DAILY_HOURS: ${STANDARD_DAILY_HOURS:-8}
+      STANDARD_MONTHLY_DAYS: ${STANDARD_MONTHLY_DAYS:-22}
+      HOURLY_WAGE: ${HOURLY_WAGE:-50}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "${BACKEND_PORT:-4001}:4000"
+    volumes:
+      - ./backend:/app
+      - ./database:/database:ro
+      - /app/node_modules
+    command: sh -c "npm run db:migrate && npm run dev"
+
+  frontend:
+    build:
+      context: ./frontend
+    restart: unless-stopped
+    environment:
+      VITE_API_URL: http://localhost:${BACKEND_PORT:-4001}/api
+      VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-5174}:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host 0.0.0.0
+
+  phpmyadmin:
+    image: phpmyadmin:5-apache
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-finalp4root}
+    depends_on:
+      mysql:
+        condition: service_healthy
+    ports:
+      - "${PHPMYADMIN_PORT:-8081}:80"
+
+volumes:
+  mysql_data:

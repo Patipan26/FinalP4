@@ -1,0 +1,428 @@
+@import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Prompt', sans-serif;
+  color: #1e293b;
+  background: #f1f5f9;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+}
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: white !important; }
+  .salary-slip { border: 1px solid #cbd5e1 !important; box-shadow: none !important; }
+}
+
+.salary-paper {
+  max-width: 420px;
+  margin-inline: auto;
+  box-shadow: 0 16px 36px rgb(22 50 74 / 8%);
+}
+
+.salary-paper-header {
+  background: linear-gradient(135deg, #12344d, #087f8c);
+  color: white;
+}
+
+.salary-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 14px;
+  padding: 10px;
+  border: 1px solid #e3ebf0;
+  border-radius: 10px;
+  background: #f5f8fa;
+}
+
+.salary-summary div {
+  min-width: 0;
+  text-align: center;
+}
+
+.salary-summary span {
+  display: block;
+  color: #8aa0b0;
+  font-size: 10px;
+}
+
+.salary-summary strong {
+  display: block;
+  margin-top: 3px;
+  color: #16324a;
+  font-size: 12px;
+}
+
+.salary-slip-heading {
+  margin: 14px 0 4px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #dbe5eb;
+  color: #718399;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: .04em;
+}
+
+.salary-slip-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 42px;
+  padding: 7px 0;
+  border-bottom: 1px solid #eef3f5;
+  color: #16324a;
+  font-size: 12px;
+}
+
+.salary-slip-row p {
+  margin: 0;
+}
+
+.salary-slip-row small {
+  display: block;
+  margin-top: 2px;
+  color: #8aa0b0;
+  font-size: 10px;
+}
+
+.salary-slip-row > span {
+  flex: 0 0 auto;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.salary-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 2px solid #12344d;
+}
+
+.salary-total span {
+  display: block;
+  color: #16324a;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.salary-total small {
+  display: block;
+  margin-top: 2px;
+  color: #8aa0b0;
+  font-size: 10px;
+}
+
+.salary-total strong {
+  color: #087f8c;
+  font-size: 21px;
+}
+
+@media print {
+  .salary-page {
+    padding: 0 !important;
+  }
+
+  .salary-paper {
+    max-width: none;
+    margin: 0;
+    box-shadow: none;
+    border-color: #cbd5e1;
+  }
+
+  .salary-paper-header {
+    color: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 3px solid rgb(147 197 253);
+  outline-offset: 2px;
+}
+
+.google-signin-container iframe {
+  width: 100% !important;
+  max-width: 380px;
+}
+
+/* FinalP4 custom visual language: clean automotive operations UI */
+:root {
+  --ink: #16324a;
+  --muted: #718399;
+  --canvas: #f3f6f9;
+  --navy: #12344d;
+  --accent: #087f8c;
+}
+
+.employee-profile-cover {
+  height: 112px;
+  background: linear-gradient(110deg, #12344d 0%, #145b70 56%, #087f8c 100%);
+}
+
+.employee-avatar {
+  background: linear-gradient(145deg, #087f8c, #12344d);
+}
+
+.employee-profile-card {
+  box-shadow: 0 18px 40px rgb(22 50 74 / 7%);
+}
+
+.employee-search-card {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.employee-search-card select {
+  max-width: 430px;
+}
+
+.profile-tabs {
+  scrollbar-width: thin;
+}
+
+@media (max-width: 640px) {
+  .employee-search-card {
+    display: block;
+  }
+
+  .employee-search-card select {
+    max-width: none;
+  }
+}
+
+body {
+  background: var(--canvas);
+  color: var(--ink);
+}
+
+.rounded-3xl {
+  border-radius: 18px;
+}
+
+.rounded-2xl {
+  border-radius: 13px;
+}
+
+.rounded-xl {
+  border-radius: 10px;
+}
+
+.shadow-sm {
+  box-shadow: 0 8px 24px rgb(22 50 74 / 6%);
+}
+
+.shadow-md {
+  box-shadow: 0 12px 28px rgb(22 50 74 / 12%);
+}
+
+.bg-slate-100 {
+  background-color: var(--canvas) !important;
+}
+
+.bg-slate-50 {
+  background-color: #f7f9fb !important;
+}
+
+.bg-blue-600 {
+  background-color: var(--accent) !important;
+}
+
+.text-blue-600 {
+  color: var(--accent) !important;
+}
+
+.border-blue-100 {
+  border-color: #cce8eb !important;
+}
+
+.focus\:ring-blue-500:focus {
+  --tw-ring-color: rgb(8 127 140 / 25%) !important;
+}
+
+.hover\:bg-blue-700:hover {
+  background-color: #066873 !important;
+}
+
+/* Login and register: less template-like, more product-like */
+main.flex.min-h-screen.items-center.justify-center.bg-slate-100 > section {
+  border-color: #dce6ed;
+  box-shadow: 0 22px 60px rgb(22 50 74 / 10%);
+}
+
+/* Admin workspace */
+main.flex.min-h-screen.bg-slate-100 > aside {
+  width: 232px;
+  background: var(--navy);
+  border-right: 0;
+}
+
+main.flex.min-h-screen.bg-slate-100 > aside h1 {
+  color: #fff;
+}
+
+main.flex.min-h-screen.bg-slate-100 > aside p {
+  color: #9bb0c0;
+}
+
+main.flex.min-h-screen.bg-slate-100 > aside .brand-mark-icon {
+  background: #1b7390;
+  box-shadow: none;
+}
+
+main.flex.min-h-screen.bg-slate-100 > aside nav button {
+  color: #b9cad7;
+}
+
+main.flex.min-h-screen.bg-slate-100 > aside nav button:hover {
+  background: rgb(255 255 255 / 8%);
+  color: #fff;
+}
+
+main.flex.min-h-screen.bg-slate-100 > aside nav button.text-blue-600 {
+  border-right: 3px solid #7bd4d7;
+  background: rgb(255 255 255 / 12%);
+  color: #fff !important;
+}
+
+main.flex.min-h-screen.bg-slate-100 > section > header {
+  height: 76px;
+  background: rgb(255 255 255 / 92%);
+  box-shadow: 0 1px 0 #e3ebf0;
+  backdrop-filter: blur(12px);
+}
+
+main.flex.min-h-screen.bg-slate-100 > section > header input {
+  background: #f4f7f9 !important;
+  border: 1px solid transparent;
+}
+
+main.flex.min-h-screen.bg-slate-100 > section > header input:focus {
+  border-color: #b7dadd;
+}
+
+/* Employee workspace */
+main.min-h-screen.bg-slate-100.pb-24 > header {
+  background: rgb(255 255 255 / 94%);
+  box-shadow: 0 1px 0 #e3ebf0;
+  backdrop-filter: blur(12px);
+}
+
+main.min-h-screen.bg-slate-100.pb-24 .brand-mark-icon {
+  box-shadow: 0 8px 18px rgb(8 127 140 / 18%);
+}
+
+main.min-h-screen.bg-slate-100.pb-24 .bg-white {
+  border-color: #e1e9ee;
+}
+
+main.min-h-screen.bg-slate-100.pb-24 > nav {
+  border-color: #dbe5eb;
+  box-shadow: 0 -8px 26px rgb(22 50 74 / 7%);
+}
+
+main.min-h-screen.bg-slate-100.pb-24 > nav button.text-blue-600 {
+  color: var(--accent) !important;
+}
+
+/* Admin top navigation */
+main.min-h-screen.bg-slate-100 > aside {
+  background: rgb(255 255 255 / 96%);
+  border-color: #e3ebf0;
+  box-shadow: 0 4px 18px rgb(22 50 74 / 5%);
+}
+
+main.min-h-screen.bg-slate-100 > aside h1 {
+  color: var(--ink);
+}
+
+main.min-h-screen.bg-slate-100 > aside p {
+  color: var(--muted);
+}
+
+main.min-h-screen.bg-slate-100 > aside .brand-mark-icon {
+  background: var(--accent);
+  box-shadow: 0 8px 18px rgb(8 127 140 / 18%);
+}
+
+main.min-h-screen.bg-slate-100 > aside nav {
+  padding-right: 200px;
+}
+
+main.min-h-screen.bg-slate-100 > aside nav button {
+  color: #718399;
+}
+
+main.min-h-screen.bg-slate-100 > aside nav button:hover {
+  background: #f1f7f8;
+  color: var(--accent);
+}
+
+main.min-h-screen.bg-slate-100 > aside nav button.bg-blue-50 {
+  background: #eaf5f6;
+  color: var(--accent) !important;
+}
+
+main.min-h-screen.bg-slate-100 > section > header {
+  position: fixed !important;
+  top: 0 !important;
+  right: 0;
+  z-index: 40;
+  width: auto;
+  height: 73px !important;
+  padding: 0 32px 0 0 !important;
+  border: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+  pointer-events: none;
+}
+
+main.min-h-screen.bg-slate-100 > section > header > div:first-child {
+  display: none;
+}
+
+main.min-h-screen.bg-slate-100 > section > header > div:last-child {
+  margin-left: 0;
+  pointer-events: auto;
+}
+
+@media (max-width: 640px) {
+  main.min-h-screen.bg-slate-100 > aside nav {
+    padding-right: 104px;
+  }
+
+  main.min-h-screen.bg-slate-100 > section > header {
+    padding-right: 12px !important;
+  }
+}
