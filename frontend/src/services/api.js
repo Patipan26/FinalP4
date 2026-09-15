@@ -18,6 +18,25 @@ export async function apiRequest(path, options = {}) {
   return data
 }
 
+export async function apiDownload(path) {
+  const token = localStorage.getItem('finalp4_token')
+  const headers = token ? { Authorization: `Bearer ${token}` } : {}
+  let response
+
+  try {
+    response = await fetch(`${API_URL}${path}`, { headers })
+  } catch {
+    throw new Error('ไม่สามารถเชื่อมต่อ Backend ได้ กรุณาตรวจสอบว่าเปิดระบบอยู่')
+  }
+
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}))
+    throw new Error(data.message || 'ไม่สามารถดาวน์โหลดไฟล์ได้')
+  }
+
+  return response.blob()
+}
+
 export const authApi = {
   register: (payload) => apiRequest('/auth/register', { method: 'POST', body: JSON.stringify(payload) }),
   login: (payload) => apiRequest('/auth/login', { method: 'POST', body: JSON.stringify(payload) }),

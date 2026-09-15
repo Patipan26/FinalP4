@@ -31,15 +31,29 @@ function roundMoney(value) {
   return Number(Number(value || 0).toFixed(2))
 }
 
+function calculateWorkDayFraction(hours) {
+  const totalHours = Math.max(0, Number(hours) || 0)
+  if (totalHours >= STANDARD_DAILY_HOURS) return 1
+  if (totalHours >= STANDARD_DAILY_HOURS / 2) return 0.5
+  return 0
+}
+
 async function calculateForUser(connection, userId, range) {
   const [[user]] = await connection.execute("SELECT id, full_name, email, employee_code, position, wage_type, wage_rate FROM users WHERE id = ? AND role = 'employee' AND status = 'active' LIMIT 1", [userId])
   if (!user) return null
 
   const [[attendance]] = await connection.execute(`
-    SELECT COALESCE(SUM(CASE WHEN type = 'check-out' THEN work_hours ELSE 0 END), 0) AS regular_hours,
-      COALESCE(SUM(CASE WHEN type = 'check-out' THEN work_fraction ELSE 0 END), 0) AS regular_days
-    FROM attendance
-    WHERE user_id = ? AND type = 'check-out' AND work_date >= ? AND work_date < ?
+    SELECT COALESCE(SUM(CASE WHEN a.type = 'check-out' AND check_in.id IS NOT NULL THEN TIMESTAMPDIFF(SECOND, check_in.timestamp, a.timestamp) ELSE 0 END), 0) AS regular_seconds
+    FROM attendance a
+    LEFT JOIN attendance check_in ON check_in.id = a.check_in_id
+    WHERE a.user_id = ? AND a.type = 'check-out' AND a.work_date >= ? AND a.work_date < ?
+  `, [userId, range.start, range.next])
+  const [attendanceDays] = await connection.execute(`
+    SELECT a.work_date, COALESCE(SUM(CASE WHEN check_in.id IS NOT NULL THEN TIMESTAMPDIFF(SECOND, check_in.timestamp, a.timestamp) ELSE 0 END), 0) AS total_seconds
+    FROM attendance a
+    LEFT JOIN attendance check_in ON check_in.id = a.check_in_id
+    WHERE a.user_id = ? AND a.type = 'check-out' AND a.work_date >= ? AND a.work_date < ?
+    GROUP BY a.work_date
   `, [userId, range.start, range.next])
   const [[overtime]] = await connection.execute(`
     SELECT COALESCE(SUM(hours), 0) AS overtime_hours,
@@ -57,19 +71,22 @@ async function calculateForUser(connection, userId, range) {
     WHERE user_id = ? AND status = 'approved' AND start_date < ? AND end_date >= ?
   `, [range.end, range.start, userId, range.next, range.start])
 
-  const regularHours = Number(attendance.regular_hours || 0)
-  const regularDays = Number(attendance.regular_days || 0)
+  const regularSeconds = Number(attendance.regular_seconds || 0)
+  const regularHours = regularSeconds / 3600
+  const regularDays = attendanceDays.reduce((total, row) => total + calculateWorkDayFraction(Number(row.total_seconds || 0) / 3600), 0)
   const overtimeHours = Number(overtime.overtime_hours || 0)
   const weightedOvertimeHours = Number(overtime.weighted_overtime_hours || 0)
   const leaveDays = Number(leave.leave_days || 0)
   const wageRate = Number(user.wage_rate || 0)
+  const testMode = process.env.ATTENDANCE_TEST_MODE === 'true' && user.wage_type === 'hourly'
+  const testMinuteWage = Number(process.env.TEST_MINUTE_WAGE || 50)
   const hourlyEquivalent = user.wage_type === 'hourly'
     ? wageRate
     : user.wage_type === 'daily'
       ? wageRate / STANDARD_DAILY_HOURS
       : wageRate / (STANDARD_MONTHLY_DAYS * STANDARD_DAILY_HOURS)
   const regularPay = user.wage_type === 'hourly'
-    ? regularHours * wageRate
+    ? testMode ? Math.round(regularHours * 60) * testMinuteWage : regularHours * wageRate
     : user.wage_type === 'daily'
       ? regularDays * wageRate
       : wageRate
@@ -90,6 +107,8 @@ async function calculateForUser(connection, userId, range) {
     gross_salary: roundMoney(grossSalary),
     deductions: 0,
     net_salary: roundMoney(grossSalary),
+    test_mode: testMode,
+    test_minute_wage: testMinuteWage,
   }
 }
 
@@ -107,12 +126,19 @@ router.get('/me', monthValidator, requireAuth, async (req, res, next) => {
       FROM payrolls WHERE user_id = ? ORDER BY payroll_month DESC, id DESC
     `, [req.auth.sub])
     const storedCurrent = rows.find((row) => String(row.payroll_month).slice(0, 7) === range.month) || null
+    const latest = await calculateForUser(db, req.auth.sub, range)
     let current = storedCurrent
-    if (storedCurrent) {
-      const latest = await calculateForUser(db, req.auth.sub, range)
-      if (latest) {
-        current = {
-          ...storedCurrent,
+    if (latest) {
+      current = {
+        ...(storedCurrent || {
+          id: null,
+          payroll_month: range.month,
+          payment_status: 'draft',
+          paid_at: null,
+          approved_at: null,
+          calculated_at: null,
+          notes: null,
+        }),
           wage_type: latest.wage_type,
           wage_rate: latest.wage_rate,
           regular_hours: latest.regular_hours,
@@ -123,14 +149,15 @@ router.get('/me', monthValidator, requireAuth, async (req, res, next) => {
           regular_pay: latest.regular_pay,
           overtime_pay: latest.overtime_pay,
           gross_salary: latest.gross_salary,
-          deductions: storedCurrent.deductions,
-          net_salary: roundMoney(latest.gross_salary - Number(storedCurrent.deductions || 0)),
+          deductions: storedCurrent?.deductions || 0,
+          net_salary: roundMoney(latest.gross_salary - Number(storedCurrent?.deductions || 0)),
+          test_mode: latest.test_mode,
+          test_minute_wage: latest.test_minute_wage,
           is_live: true,
-        }
       }
     }
     const responseRows = current?.is_live
-      ? rows.map((row) => row.id === current.id ? current : row)
+      ? current.id === null ? [current, ...rows] : rows.map((row) => row.id === current.id ? current : row)
       : rows
     return res.json({ month: range.month, current, rows: responseRows })
   } catch (error) {

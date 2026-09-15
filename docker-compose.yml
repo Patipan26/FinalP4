@@ -35,9 +35,14 @@ services:
       SHOP_LAT: ${SHOP_LAT:-13.7563}
       SHOP_LNG: ${SHOP_LNG:-100.5018}
       MAX_DISTANCE_METERS: ${MAX_DISTANCE_METERS:-100}
+      ATTENDANCE_TEST_MODE: ${ATTENDANCE_TEST_MODE:-true}
+      TEST_MINUTE_WAGE: ${TEST_MINUTE_WAGE:-50}
       STANDARD_DAILY_HOURS: ${STANDARD_DAILY_HOURS:-8}
       STANDARD_MONTHLY_DAYS: ${STANDARD_MONTHLY_DAYS:-22}
       HOURLY_WAGE: ${HOURLY_WAGE:-50}
+      WORK_START_TIME: ${WORK_START_TIME:-09:00}
+      WORK_END_TIME: ${WORK_END_TIME:-18:00}
+      WORK_GRACE_MINUTES: ${WORK_GRACE_MINUTES:-0}
     depends_on:
       mysql:
         condition: service_healthy
@@ -45,6 +50,7 @@ services:
       - "${BACKEND_PORT:-4001}:4000"
     volumes:
       - ./backend:/app
+      - ./backend/uploads:/app/uploads
       - ./database:/database:ro
       - /app/node_modules
     command: sh -c "npm run db:migrate && npm run dev"
@@ -56,6 +62,10 @@ services:
     environment:
       VITE_API_URL: http://localhost:${BACKEND_PORT:-4001}/api
       VITE_GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      VITE_ATTENDANCE_TEST_MODE: ${ATTENDANCE_TEST_MODE:-true}
+      VITE_TEST_MINUTE_WAGE: ${TEST_MINUTE_WAGE:-50}
+      VITE_WORK_START_TIME: ${WORK_START_TIME:-09:00}
+      VITE_WORK_END_TIME: ${WORK_END_TIME:-18:00}
     depends_on:
       - backend
     ports:

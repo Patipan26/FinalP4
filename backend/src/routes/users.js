@@ -55,4 +55,18 @@ router.patch('/:id', [
   }
 })
 
+router.delete('/:id', requireAuth, requireRole('admin'), async (req, res, next) => {
+  if (Number(req.params.id) === Number(req.auth.sub)) {
+    return res.status(400).json({ message: 'ไม่สามารถลบบัญชี Admin ที่กำลังใช้งานอยู่ได้' })
+  }
+
+  try {
+    const [result] = await db.execute("UPDATE users SET status = 'inactive' WHERE id = ? AND role = 'employee'", [req.params.id])
+    if (result.affectedRows === 0) return res.status(404).json({ message: 'ไม่พบพนักงานที่สามารถลบได้' })
+    return res.json({ message: 'ลบพนักงานออกจากการใช้งานสำเร็จ และเก็บประวัติเดิมไว้แล้ว' })
+  } catch (error) {
+    return next(error)
+  }
+})
+
 module.exports = router
